@@ -1,31 +1,15 @@
 # First step: get all data
+import pyautogui
 import requests
+import pyperclip
+import keyboard
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import re
 import time
 import os
 
-text = """Здравствуйте!
-\nМеня зовут Стас, я студент ИТМО, провожу исследование на тему «лучшие практики в маркетинге 2023 года» для курсовой работы.
-\nЯ созваниваюсь с директорами по маркетингу и спрашиваю о лучших практиках за последний год. Вот вопросы, которые я задаю:
-
-\n1. Какие маркетинговые инструменты сработали за последний год?
-\n2. Почему вы считаете, что они сработали? На что опираетесь, когда делаете такой вывод?
-\n3. Какие из этих маркетинговые решения вы делали силами инхуз-команды, а какие аутсорс-командой?
-\n4. Как искали аутсорс команду для ваших задач?
-\n5. С какой аутсорс командой у вас получилось сработаться? Почему?
-\n6. С какой аутсорс командой у вас не получилось сработаться? Почему?
-\n7. На какие каналы подписаны и почему?
-\n8. Для чего используете Тенчат? Решает ли он ваш запрос?
-
-\nПо запросу я могу поделиться результатами исследования.
-
-\nЕсли же вы не захотите делиться этим публично, то вы можете так и сказать, и я не буду нигде публиковать наше с вами интервью.
-
-\nЕсли вам интересно поучаствовать в таком, подскажите, когда вам было бы удобно созвониться онлайн?"""
-
-links_tg = []
+usernames = []
 
 links = []
 link_pattern = re.compile(r'https?://\S+')
@@ -83,21 +67,46 @@ for link in links:
         # Check if the anchor tag is found
         if telegram_anchor:
             # Extract the Telegram link from the href attribute
-            telegram_link = telegram_anchor.get('href')
+            telegram_text = telegram_anchor.get_text(strip=True)
 
-    if link_pattern.match(telegram_link):
-        links_tg.append(telegram_link)
-
-# navigate to the website
-driver.get("https://web.telegram.org/a/")
-
-# adjust the timeout as needed
-time.sleep(60)
-
-for link_t in links_tg:
-    driver.get(link_t)
-    time.sleep(60)
-    # get link from a link open in web
-    # open this link
+            usernames.append(telegram_text[1:])
 
 driver.quit()
+
+text = """Здравствуйте!
+\nМеня зовут Стас, я сооснователь бюро, которое делает сайты и их продвигает.
+\nПишу, чтобы предложить бесплатную консультацию по улучшению сайта.
+\nЕсли хотите сделать сайт с нуля для нового проекта, можем обсудить: зачем он вам может пригодиться, что на него добавить и как его продвигать.
+\nК разбору сайта мы подключаем дизайнера и коммерческого редактора. Поэтому вы получаете комплексный ответ, а не просто мнение одного специалиста.
+\nЕсли вам интересно, напишите время, когда вам было бы удобно созвониться."""
+
+# Open the Telegram application
+pyautogui.hotkey('winleft')
+time.sleep(5)
+pyautogui.write('Telegram', interval=0.25)
+pyautogui.press('enter')
+time.sleep(5)
+
+# Loop through the usernames and send the message
+for username in usernames:
+    # Clear the existing text in the search field
+    pyautogui.hotkey('ctrl', 'a')  # Select all text
+    pyautogui.press('delete')  # Delete the selected text
+
+    # Search for the user
+    pyperclip.copy(username)
+    pyautogui.hotkey('ctrl', 'v')  # Paste the username from the clipboard
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(2)
+
+    # Type and send the message
+    pyperclip.copy(text)
+    pyautogui.hotkey('ctrl', 'v')  # Paste the message from the clipboard
+    pyautogui.press('enter')
+
+    # Go back to the main chat list
+    pyautogui.hotkey('esc')
+
+# Close the Telegram application
+pyautogui.hotkey('alt', 'f4')
